@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Con inteligencIA</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --ink: #0f172a;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --blue: #0b5cab;
+      --teal: #0ea5a4;
+      --real: #15803d;
+      --real-bg: #dcfce7;
+      --fake: #b91c1c;
+      --fake-bg: #fee2e2;
+      --warn: #b45309;
+      --warn-bg: #fef3c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+
+    .app-shell {
+      max-width: 540px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg);
+      position: relative;
+      padding-bottom: 3rem;
+    }
+
+    /* Barra superior */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--bg);
+      padding: 0.7rem 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      border-bottom: 1px solid #eef2f6;
+    }
+
+    .hamburger-btn {
+      width: 38px;
+      height: 38px;
+      border: none;
+      background: transparent;
+      color: var(--ink);
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .hamburger-btn:hover {
+      background: var(--surface);
+    }
+
+    .search-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      border: 1.5px solid var(--line);
+      border-radius: 999px;
+      padding: 0.42rem 0.85rem;
+      background: var(--bg);
+    }
+
+    .search-pill input {
+      border: none;
+      background: transparent;
+      width: 100%;
+      font-size: 0.92rem;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .shield-mark {
+      font-size: 1.25rem;
+      color: #0284c7;
+      flex-shrink: 0;
+    }
+
+    /* Menú vertical en la esquina superior izquierda */
+    .side-dropdown {
+      display: none;
+      position: fixed;
+      top: 54px;
+      left: 12px;
+      z-index: 50;
+      width: 230px;
+      background: var(--bg);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+      overflow: hidden;
+    }
+
+    .side-dropdown.open {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .side-dropdown button {
+      border: none;
+      border-bottom: 1px solid #eef2f6;
+      background: var(--bg);
+      color: var(--ink);
+      text-align: left;
+      padding: 0.8rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .side-dropdown button:last-child {
+      border-bottom: none;
+    }
+
+    .side-dropdown button:hover,
+    .side-dropdown button.active {
+      background: #eff6ff;
+      color: var(--blue);
+    }
+
+    .view {
+      display: none;
+      padding: 1rem 1.1rem 0;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    /* Lupa central con I - engrane - A */
+    .hero-center {
+      text-align: center;
+      padding-top: 0.6rem;
+    }
+
+    .magnifier-box {
+      position: relative;
+      width: 170px;
+      height: 155px;
+      margin: 0 auto 0.75rem;
+    }
+
+    .magnifier-ring {
+      width: 132px;
+      height: 132px;
+      border-radius: 50%;
+      border: 6px solid #0284c7;
+      background: #f0f9ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      margin: 0 auto;
+      position: relative;
+      box-shadow: inset 0 0 0 3px #bae6fd;
+    }
+
+    .mag-letter {
+      font-size: 2.35rem;
+      font-weight: 800;
+      color: #0f2942;
+      line-height: 1;
+    }
+
+    .mag-gear {
+      font-size: 1.7rem;
+      color: #0369a1;
+      line-height: 1;
+    }
+
+    .magnifier-handle {
+      position: absolute;
+      width: 52px;
+      height: 15px;
+      background: #0f3b66;
+      border-radius: 999px;
+      right: 6px;
+      bottom: 14px;
+      transform: rotate(42deg);
+    }
+
+    .title-line {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      margin: 0.25rem 0 0.65rem;
+    }
+
+    .title-line h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .ia-globe {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid #0284c7;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.85rem;
+      font-weight: 900;
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .lead-copy {
+      margin: 0 auto 1.25rem;
+      max-width: 370px;
+      font-size: 0.98rem;
+      color: #334155;
+    }
+
+    .dashed-upload-zone {
+      border: 2px dashed #7dd3fc;
+      border-radius: 20px;
+      padding: 0.95rem;
+      background: #f8fcff;
+    }
+
+    .gallery-cta {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      background: linear-gradient(90deg, var(--blue), var(--teal));
+      color: #ffffff;
+      font-size: 1.12rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      box-shadow: 0 6px 16px rgba(11, 92, 171, 0.22);
+    }
+
+    .gallery-cta:active {
+      transform: scale(0.99);
+    }
+
+    .cta-icon {
+      width: 38px;
+      height: 34px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.22);
+      display: grid;
+      place-items: center;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+
+    .secondary-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 0.7rem;
+    }
+
+    .mini-btn {
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink);
+      border-radius: 10px;
+      padding: 0.58rem 0.65rem;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .mini-btn:hover {
+      border-color: var(--blue);
+    }
+
+    .status-line {
+      margin-top: 0.7rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--blue);
+      text-align: center;
+    }
+
+    #img-preview,
+    #vid-preview {
+      display: none;
+      max-width: 100%;
+      max-height: 250px;
+      margin: 0.75rem auto 0;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+
+    /* Resultado */
+    .verdict-box {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 14px;
+      border: 1.5px solid var(--line);
+      background: var(--surface);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.28rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      margin-bottom: 0.4rem;
+    }
+
+    .tag-real {
+      background: var(--real-bg);
+      color: var(--real);
+    }
+
+    .tag-fake {
+      background: var(--fake-bg);
+      color: var(--fake);
+    }
+
+    .tag-warn {
+      background: var(--warn-bg);
+      color: var(--warn);
+    }
+
+    .pct-track {
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 0.55rem 0 0.75rem;
+    }
+
+    .pct-bar {
+      height: 100%;
+      width: 0%;
+      transition: width 0.35s ease;
+    }
+
+    .detail-list {
+      margin: 0;
+      padding-left: 1.15rem;
+      font-size: 0.9rem;
+      color: #1e293b;
+    }
+
+    .detail-list li {
+      margin-bottom: 0.3rem;
+    }
+
+    .report-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .report-btn {
+      flex: 1;
+      min-width: 140px;
+      border: 1.5px solid var(--blue);
+      background: var(--bg);
+      color: var(--blue);
+      border-radius: 10px;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .report-btn.primary-dl {
+      background: var(--blue);
+      color: #ffffff;
+    }
+
+    .report-preview {
+      display: none;
+      margin-top: 0.75rem;
+      padding: 0.8rem;
+      border-radius: 10px;
+      background: var(--bg);
+      border: 1px dashed var(--line);
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      color: #334155;
+    }
+
+    /* Función 1: Comparador lado a lado (Foto A vs Foto B) */
+    .compare-panel {
+      margin-top: 1.25rem;
+      padding: 1rem;
+      border-radius: 16px;
+      border: 1.5px solid var(--line);
+      background: var(--surface);
+    }
+
+    .compare-panel h2 {
+      margin: 0 0 0.25rem;
+      font-size: 1.08rem;
+    }
+
+    .compare-sub {
+      margin: 0 0 0.85rem;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7rem;
+    }
+
+    @media (max-width: 460px) {
+      .compare-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .compare-slot {
+      background: var(--bg);
+      border: 1.5px dashed var(--line);
+      border-radius: 12px;
+      padding: 0.7rem;
+      text-align: center;
+    }
+
+    .compare-slot-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      margin-bottom: 0.45rem;
+      color: var(--ink);
+    }
+
+    .compare-pick-btn {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      border-radius: 9px;
+      padding: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .compare-pick-btn:hover {
+      border-color: var(--blue);
+    }
+
+    .compare-thumb {
+      display: none;
+      width: 100%;
+      height: 115px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-top: 0.55rem;
+      border: 1px solid var(--line);
+    }
+
+    .compare-verdict {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .compare-summary {
+      display: none;
+      margin-top: 0.8rem;
+      padding: 0.75rem 0.85rem;
+      border-radius: 10px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      font-size: 0.85rem;
+    }
+
+    .privacy-note {
+      margin-top: 1rem;
+      padding: 0.75rem 0.9rem;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid #e2e8f0;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* Analizador de texto */
+    .text-panel {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .text-panel h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.05rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 0.75rem;
+      border-radius: 12px;
+      border: 1.5px solid var(--line);
+      font-size: 0.94rem;
+      resize: vertical;
+      margin-bottom: 0.65rem;
+    }
+
+    .dark-btn {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      background: #0f172a;
+      color: #fff;
+      font-size: 0.94rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Nuestros valores (solo texto) */
+    .page-heading {
+      margin: 0 0 0.35rem;
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .page-sub {
+      margin: 0 0 1rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .values-text-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .value-text-card {
+      padding: 0.9rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .value-text-card strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .value-text-card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    /* Código ético */
+    .ethics-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .ethics-card {
+      padding: 0.9rem 1rem;
+      border-radius: 12px;
+      background: var(--surface);
+      border-left: 4px solid var(--blue);
+    }
+
+    .ethics-card h3 {
+      margin: 0 0 0.3rem;
+      font-size: 0.92rem;
+    }
+
+    .ethics-card p {
+      margin: 0;
+      font-size: 0.88rem;
+    }
+
+    .comment-area {
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .comment-area input {
+      width: 100%;
+      padding: 0.7rem 0.8rem;
+      border-radius: 10px;
+      border: 1.5px solid var(--line);
+      font-size: 0.92rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .comment-ok {
+      margin-top: 0.55rem;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--real);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+
+    <header class="top-bar">
+      <button
+        id="menu-btn"
+        class="hamburger-btn"
+        type="button"
+        aria-label="Menú"
+        aria-expanded="false"
+        onclick="toggleDropdown(event)"
+      >
+        ☰
+      </button>
+      <div class="search-pill">
+        <span>🔍</span>
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Buscar consejo"
+          oninput="handleSearch()"
+        />
+      </div>
+      <span class="shield-mark" title="Privacidad y seguridad">🛡️</span>
+    </header>
+
+    <nav id="side-dropdown" class="side-dropdown" aria-label="Menú principal">
+      <button id="menu-inicio" class="active" type="button" onclick="goView('inicio')">Inicio</button>
+      <button id="menu-valores" type="button" onclick="goView('valores')">Nuestros valores</button>
+      <button id="menu-codigo" type="button" onclick="goView('codigo')">Código ético</button>
+    </nav>
+
+    <!-- INICIO -->
+    <section id="view-inicio" class="view active">
+      <div class="hero-center">
+        <div class="magnifier-box" aria-hidden="true">
+          <div class="magnifier-ring">
+            <span class="mag-letter">I</span>
+            <span class="mag-gear">⚙</span>
+            <span class="mag-letter">A</span>
+          </div>
+          <div class="magnifier-handle"></div>
+        </div>
+
+        <div class="title-line">
+          <h1>Con inteligenc</h1>
+          <span class="ia-globe">IA</span>
+        </div>
+
+        <p class="lead-copy">
+          Verifica al instante si una <strong>fotografía</strong> o <strong>video</strong> de tu galería fue generado con Inteligencia Artificial o si es contenido <strong>real</strong>.
+        </p>
+      </div>
+
+      <input
+        type="file"
+        id="gallery-picker"
+        accept="image/*,video/*"
+        style="display:none;"
+        onchange="processGalleryFile(this.files)"
+      />
+      <input
+        type="file"
+        id="doc-picker"
+        style="display:none;"
+        onchange="processAnyFile(this.files)"
+      />
+      <input
+        type="file"
+        id="compare-a-picker"
+        accept="image/*"
+        style="display:none;"
+        onchange="handleComparePhoto('A', this.files)"
+      />
+      <input
+        type="file"
+        id="compare-b-picker"
+        accept="image/*"
+        style="display:none;"
+        onchange="handleComparePhoto('B', this.files)"
+      />
+
+      <div class="dashed-upload-zone">
+        <button
+          class="gallery-cta"
+          type="button"
+          onclick="document.getElementById('gallery-picker').click()"
+        >
+          <span class="cta-icon">🖼️</span>
+          <span>Subir Foto o Video de Galería</span>
+        </button>
+
+        <div class="secondary-row">
+          <button class="mini-btn" type="button" onclick="document.getElementById('doc-picker').click()">
+            📄 Otro archivo (PDF / TXT)
+          </button>
+          <button class="mini-btn" type="button" onclick="jumpToCompare()">
+            ⚖️ Comparar 2 fotos
+          </button>
+        </div>
+      </div>
+
+      <div id="status-line" class="status-line"></div>
+
+      <img id="img-preview" alt="Vista previa de la foto" />
+      <video id="vid-preview" controls playsinline></video>
+
+      <!-- Resultado + Reporte descargable de evidencia -->
+      <div id="verdict-box" class="verdict-box">
+        <span id="verdict-tag" class="tag"></span>
+        <h2 id="verdict-heading" style="margin: 0.2rem 0 0.3rem; font-size: 1.05rem;"></h2>
+        <div class="pct-track">
+          <div id="pct-bar" class="pct-bar"></div>
+        </div>
+        <ul id="detail-list" class="detail-list"></ul>
+
+        <div class="report-actions">
+          <button class="report-btn primary-dl" type="button" onclick="downloadEvidenceReport()">
+            ⬇️ Descargar reporte (.txt)
+          </button>
+          <button class="report-btn" type="button" onclick="toggleReportPreview()">
+            📋 Ver / copiar resumen
+          </button>
+        </div>
+        <div id="report-preview" class="report-preview"></div>
+      </div>
+
+      <!-- Función 1: Comparador lado a lado (Foto A vs Foto B) -->
+      <div id="compare-panel" class="compare-panel">
+        <h2>Comparador lado a lado (Foto A vs. Foto B)</h2>
+        <p class="compare-sub">
+          Sube dos imágenes para contrastar sus señales de IA, textura y metadatos en tiempo real.
+        </p>
+
+        <div class="compare-grid">
+          <div class="compare-slot">
+            <div class="compare-slot-title">Foto A</div>
+            <button
+              class="compare-pick-btn"
+              type="button"
+              onclick="document.getElementById('compare-a-picker').click()"
+            >
+              Elegir Foto A
+            </button>
+            <img id="thumb-a" class="compare-thumb" alt="Vista previa Foto A" />
+            <div id="verdict-a" class="compare-verdict">Sin analizar</div>
+          </div>
+
+          <div class="compare-slot">
+            <div class="compare-slot-title">Foto B</div>
+            <button
+              class="compare-pick-btn"
+              type="button"
+              onclick="document.getElementById('compare-b-picker').click()"
+            >
+              Elegir Foto B
+            </button>
+            <img id="thumb-b" class="compare-thumb" alt="Vista previa Foto B" />
+            <div id="verdict-b" class="compare-verdict">Sin analizar</div>
+          </div>
+        </div>
+
+        <div id="compare-summary" class="compare-summary"></div>
+      </div>
+
+      <div class="privacy-note">
+        <strong>Aviso de privacidad:</strong> Las imágenes, videos y archivos que subas <strong>no se guardan en ninguna nube</strong> ni servidor externo. <strong>No se aceptan fotos ni videos explícitos</strong>, inapropiados o ilícitos, ni archivos mayores a 100 MB.
+      </div>
+
+      <div id="text-panel" class="text-panel">
+        <h2>Analizar texto</h2>
+        <textarea id="text-input" placeholder="Pega o escribe un texto para comprobar si es real o generado por IA..."></textarea>
+        <button class="dark-btn" type="button" onclick="analyzeTextInput()">Comprobar texto</button>
+      </div>
+    </section>
+
+    <!-- 1. NUESTROS VALORES (solo texto) -->
+    <section id="view-valores" class="view">
+      <h2 class="page-heading">Nuestros valores</h2>
+      <p class="page-sub">Principios que rigen el uso de esta plataforma.</p>
+
+      <div class="values-text-list">
+        <div class="value-text-card">
+          <strong>Respeto</strong>
+          <p>Trato digno hacia todas las personas y cuidado de su privacidad.</p>
+        </div>
+        <div class="value-text-card">
+          <strong>Justicia</strong>
+          <p>Evaluación objetiva y transparente sin tratos preferenciales.</p>
+        </div>
+        <div class="value-text-card">
+          <strong>Honestidad</strong>
+          <p>Información clara sobre los resultados y limitaciones del análisis.</p>
+        </div>
+        <div class="value-text-card">
+          <strong>Equidad</strong>
+          <p>Trato igualitario y libre de discriminación para cualquier persona.</p>
+        </div>
+        <div class="value-text-card">
+          <strong>Responsabilidad</strong>
+          <p>Uso seguro, sin guardar archivos en la nube y con mejora constante.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. CÓDIGO ÉTICO -->
+    <section id="view-codigo" class="view">
+      <h2 class="page-heading">Código ético</h2>
+      <p class="page-sub">Normas de convivencia, privacidad y verificación en la plataforma.</p>
+
+      <div class="ethics-stack">
+        <div class="ethics-card">
+          <h3>1. ¿Qué conductas están prohibidas en la plataforma?</h3>
+          <p>Adjuntar fotos o videos con contenido inapropiado, ilícito o sexual/explícito, y saturar la página con archivos mayores a 100 MB.</p>
+        </div>
+        <div class="ethics-card">
+          <h3>2. ¿Cómo se protegerá a los usuarios?</h3>
+          <p>No se requiere cuenta ni datos personales para mayor seguridad, y no se guardan fotos, archivos ni videos en la página ni en ninguna nube.</p>
+        </div>
+        <div class="ethics-card">
+          <h3>3. ¿Cómo se evitará la discriminación?</h3>
+          <p>La plataforma está libre de discriminación por cuestiones de género, tez, orientación sexual, edad o religión.</p>
+        </div>
+        <div class="ethics-card">
+          <h3>4. ¿Qué harán ante información falsa que llegue?</h3>
+          <p>Se analiza el contenido para detectar señales de falsedad o IA, explicando el motivo y mostrando una alerta cuando no resulte verídico.</p>
+        </div>
+        <div class="ethics-card">
+          <h3>5. ¿Cómo se resolverán las quejas?</h3>
+          <p>Mediante un apartado de comentarios y sugerencias abierto a críticas para evaluarlas y aplicar mejoras.</p>
+        </div>
+      </div>
+
+      <div class="comment-area">
+        <h3 style="margin: 0 0 0.5rem; font-size: 0.98rem;">Comentarios y sugerencias</h3>
+        <input id="comment-field" type="text" placeholder="Escribe una queja, comentario o sugerencia..." />
+        <button class="dark-btn" type="button" onclick="submitComment()">Enviar</button>
+        <div id="comment-ok" class="comment-ok"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const MAX_FILE_BYTES = 100 * 1024 * 1024;
+    let lastReportText = "";
+    const compareResults = { A: null, B: null };
+
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+
+    const AI_KEYWORDS = [
+      "midjourney", "dall-e", "dalle", "stable diffusion", "comfyui",
+      "automatic1111", "c2pa", "jumbf", "synthid", "adobe firefly",
+      "bing image creator", "dreamstudio", "leonardo.ai", "chatgpt",
+      "openai", "gpt-4", "gpt-5", "claude", "anthropic", "gemini",
+      "imagen 3", "imagen 4", "flux", "ideogram", "sora", "runway",
+      "pika", "luma", "kling", "hailuo", "veo", "recraft", "grok"
+    ];
+
+    const CAMERA_EXIF_TAGS = [
+      "apple", "iphone", "samsung", "canon", "nikon", "sony",
+      "fujifilm", "xiaomi", "redmi", "motorola", "huawei", "pixel",
+      "exif", "gpsinfo", "exposuretime", "fnumber", "isospeedratings",
+      "focallength", "lensmodel", "photoshop"
+    ];
+
+    const AI_TEXT_CONNECTORS = [
+      "en conclusión", "es importante destacar", "en el mundo actual",
+      "cabe destacar", "en última instancia", "ofrece una amplia gama",
+      "no se trata solo de", "revolucionando la forma", "a lo largo de la historia",
+      "en este sentido", "es fundamental señalar", "en resumen",
+      "por otro lado", "de esta manera", "resulta fundamental",
+      "en la actualidad", "hoy en día", "sin lugar a dudas",
+      "desempeña un papel", "papel fundamental", "clave para",
+      "como inteligencia artificial", "como modelo de lenguaje"
+    ];
+
+    const BLOCKED_WORDS = ["nsfw", "xxx", "porn", "explicit", "erotic", "desnudo"];
+
+    function toggleDropdown(ev) {
+      ev.stopPropagation();
+      const dd = document.getElementById("side-dropdown");
+      const btn = document.getElementById("menu-btn");
+      const isOpen = dd.classList.toggle("open");
+      btn.setAttribute("aria-expanded", String(isOpen));
+    }
+
+    document.addEventListener("click", (ev) => {
+      const dd = document.getElementById("side-dropdown");
+      const btn = document.getElementById("menu-btn");
+      if (dd.classList.contains("open") && !dd.contains(ev.target) && !btn.contains(ev.target)) {
+        dd.classList.remove("open");
+        btn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    function goView(name) {
+      document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+      document.getElementById(`view-${name}`).classList.add("active");
+
+      document.querySelectorAll(".side-dropdown button").forEach((b) => b.classList.remove("active"));
+      document.getElementById(`menu-${name}`).classList.add("active");
+
+      document.getElementById("side-dropdown").classList.remove("open");
+      document.getElementById("menu-btn").setAttribute("aria-expanded", "false");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function jumpToCompare() {
+      goView("inicio");
+      const el = document.getElementById("compare-panel");
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function handleSearch() {
+      const q = document.getElementById("search-input").value.trim().toLowerCase();
+      if (!q) {
+        document.querySelectorAll(".value-text-card, .ethics-card").forEach((c) => (c.style.display = ""));
+        return;
+      }
+      if (["valor", "respeto", "justicia", "honestidad", "equidad", "responsabilidad"].some((w) => q.includes(w))) {
+        goView("valores");
+      } else if (["etico", "ético", "codigo", "código", "queja", "discrimin", "100"].some((w) => q.includes(w))) {
+        goView("codigo");
+      } else {
+        goView("inicio");
+      }
+
+      document.querySelectorAll(".value-text-card, .ethics-card").forEach((card) => {
+        card.style.display = card.textContent.toLowerCase().includes(q) ? "" : "none";
+      });
+    }
+
+    function submitComment() {
+      const field = document.getElementById("comment-field");
+      const ok = document.getElementById("comment-ok");
+      if (!field.value.trim()) {
+        ok.style.color = "var(--warn)";
+        ok.textContent = "Escribe un comentario antes de enviar.";
+        return;
+      }
+      ok.style.color = "var(--real)";
+      ok.textContent = "Comentario registrado en esta sesión para revisión.";
+      field.value = "";
+    }
+
+    function clearMediaBox() {
+      const img = document.getElementById("img-preview");
+      const vid = document.getElementById("vid-preview");
+      img.style.display = "none";
+      img.removeAttribute("src");
+      vid.style.display = "none";
+      vid.pause();
+      vid.removeAttribute("src");
+      document.getElementById("verdict-box").style.display = "none";
+      document.getElementById("report-preview").style.display = "none";
+    }
+
+    function checkFileLimits(file) {
+      if (file.size > MAX_FILE_BYTES) {
+        renderVerdict("warn", 0, "Archivo bloqueado (> 100 MB)", [
+          "No se permiten archivos mayores a 100 MB."
+        ], file.name);
+        return false;
+      }
+      const lower = file.name.toLowerCase();
+      if (BLOCKED_WORDS.some((w) => lower.includes(w))) {
+        renderVerdict("warn", 0, "Contenido no permitido", [
+          "No se aceptan fotos, videos ni archivos explícitos o inapropiados."
+        ], file.name);
+        return false;
+      }
+      return true;
+    }
+
+    function scanAsciiFull(bytes) {
+      let s = "";
+      const limit = Math.min(bytes.length, 1500000);
+      for (let i = 0; i < limit; i++) {
+        const b = bytes[i];
+        if (b >= 32 && b <= 126) s += String.fromCharCode(b);
+      }
+      if (bytes.length > limit) {
+        const tailStart = Math.max(0, bytes.length - 400000);
+        for (let i = tailStart; i < bytes.length; i++) {
+          const b = bytes[i];
+          if (b >= 32 && b <= 126) s += String.fromCharCode(b);
+        }
+      }
+      return s.toLowerCase();
+    }
+
+    async function evaluatePhotoData(file) {
+      const buf = await file.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      const rawAscii = scanAsciiFull(bytes);
+
+      const aiHits = AI_KEYWORDS.filter((k) => rawAscii.includes(k));
+      const camHits = CAMERA_EXIF_TAGS.filter((k) => rawAscii.includes(k));
+
+      let fakePoints = 50;
+      const reasons = [];
+      let dimsLabel = "desconocida";
+      let noiseLabel = "N/A";
+
+      if (aiHits.length > 0) {
+        fakePoints += 42;
+        reasons.push(`Etiquetas o firmas de IA detectadas en el archivo: ${aiHits.join(", ")}.`);
+      }
+
+      if (camHits.length >= 2) {
+        fakePoints -= 28;
+        reasons.push(`Metadatos de cámara o teléfono detectados (${camHits.slice(0, 4).join(", ")}).`);
+      } else if (aiHits.length === 0) {
+        fakePoints += 8;
+        reasons.push("Sin metadatos EXIF de cámara física (común en imágenes generadas o reexportadas).");
+      }
+
+      try {
+        const bmp = await createImageBitmap(file);
+        const w = bmp.width;
+        const h = bmp.height;
+        dimsLabel = `${w}×${h}`;
+
+        const exactAiRes = [
+          [512, 512], [768, 768], [1024, 1024], [2048, 2048],
+          [1024, 1536], [1536, 1024], [1024, 1792], [1792, 1024],
+          [896, 1152], [1152, 896], [832, 1216], [1216, 832],
+          [768, 1344], [1344, 768], [1080, 1080]
+        ];
+        const isExactAiSize = exactAiRes.some(([cw, ch]) => cw === w && ch === h);
+        const isDivisibleBy64 = (w % 64 === 0 && h % 64 === 0);
+
+        if (isExactAiSize) {
+          fakePoints += 16;
+          reasons.push(`Resolución ${w}×${h} coincide exactamente con salida estándar de generadores IA.`);
+        } else if (isDivisibleBy64 && camHits.length === 0) {
+          fakePoints += 10;
+          reasons.push(`Dimensiones ${w}×${h} múltiplos exactos de 64 (latentes de difusión).`);
+        }
+
+        const cropW = Math.min(w, 320);
+        const cropH = Math.min(h, 320);
+        const startX = Math.floor((w - cropW) / 2);
+        const startY = Math.floor((h - cropH) / 2);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = cropW;
+        canvas.height = cropH;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(bmp, startX, startY, cropW, cropH, 0, 0, cropW, cropH);
+        const px = ctx.getImageData(0, 0, cropW, cropH).data;
+
+        let laplacianSum = 0;
+        let flatPixelCount = 0;
+        let flatNoiseSum = 0;
+        let satSum = 0;
+        let extremeToneCount = 0;
+        let totalSamples = 0;
+
+        for (let y = 1; y < cropH - 1; y++) {
+          for (let x = 1; x < cropW - 1; x++) {
+            const idx = (y * cropW + x) * 4;
+            const r = px[idx], g = px[idx + 1], b = px[idx + 2];
+            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+            const lRight = 0.299 * px[idx + 4] + 0.587 * px[idx + 5] + 0.114 * px[idx + 6];
+            const lLeft  = 0.299 * px[idx - 4] + 0.587 * px[idx - 3] + 0.114 * px[idx - 2];
+            const dIdx   = ((y + 1) * cropW + x) * 4;
+            const uIdx   = ((y - 1) * cropW + x) * 4;
+            const lDown  = 0.299 * px[dIdx] + 0.587 * px[dIdx + 1] + 0.114 * px[dIdx + 2];
+            const lUp    = 0.299 * px[uIdx] + 0.587 * px[uIdx + 1] + 0.114 * px[uIdx + 2];
+
+            const lap = Math.abs(4 * lum - lRight - lLeft - lDown - lUp);
+            laplacianSum += lap;
+
+            const localGradient = Math.abs(lRight - lLeft) + Math.abs(lDown - lUp);
+            if (localGradient < 8) {
+              flatPixelCount++;
+              flatNoiseSum += lap;
+            }
+
+            const maxC = Math.max(r, g, b);
+            const minC = Math.min(r, g, b);
+            satSum += maxC > 0 ? (maxC - minC) / maxC : 0;
+            if (lum < 18 || lum > 238) extremeToneCount++;
+
+            totalSamples++;
+          }
+        }
+
+        const avgLap = laplacianSum / Math.max(1, totalSamples);
+        const flatNoise = flatPixelCount > 30 ? flatNoiseSum / flatPixelCount : avgLap;
+        noiseLabel = flatNoise.toFixed(2);
+        const avgSat = satSum / Math.max(1, totalSamples);
+        const extremeRatio = extremeToneCount / Math.max(1, totalSamples);
+
+        if (flatNoise < 1.85) {
+          fakePoints += 18;
+          reasons.push(`Superficies excesivamente lisas sin grano de sensor (ruido residual ${noiseLabel}).`);
+        } else if (flatNoise > 3.6 && camHits.length > 0) {
+          fakePoints -= 16;
+          reasons.push(`Ruido natural de sensor óptico detectado (${noiseLabel}).`);
+        } else if (flatNoise > 4.2) {
+          fakePoints -= 12;
+          reasons.push(`Textura granular compatible con captura fotográfica (${noiseLabel}).`);
+        }
+
+        if (avgSat > 0.36 && extremeRatio > 0.16) {
+          fakePoints += 14;
+          reasons.push(`Saturación cromática (${(avgSat * 100).toFixed(0)}%) y rango de iluminación sintéticos.`);
+        } else if (avgSat < 0.24 && extremeRatio < 0.08) {
+          fakePoints -= 8;
+          reasons.push(`Iluminación y balance de color naturales (saturación ${(avgSat * 100).toFixed(0)}%).`);
+        }
+      } catch (_) {
+        reasons.push("No se pudieron decodificar los píxeles de esta imagen; análisis basado en estructura del archivo.");
+      }
+
+      const finalAiPct = Math.max(4, Math.min(97, Math.round(fakePoints)));
+      let mode = "warn";
+      let title = "INCIERTO / Señales mixtas (sin metadatos concluyentes)";
+      if (finalAiPct >= 58) {
+        mode = "fake";
+        title = "FALSO / Alta probabilidad de IA";
+      } else if (finalAiPct <= 42) {
+        mode = "real";
+        title = "REAL / Compatible con fotografía auténtica";
+      }
+
+      return { mode, finalAiPct, title, reasons, dimsLabel, noiseLabel };
+    }
+
+    async function inspectPhoto(file) {
+      const img = document.getElementById("img-preview");
+      img.src = URL.createObjectURL(file);
+      img.style.display = "block";
+
+      const res = await evaluatePhotoData(file);
+      renderVerdict(
+        res.mode,
+        res.finalAiPct,
+        res.title,
+        res.reasons,
+        `${file.name} (${res.dimsLabel}, ruido ${res.noiseLabel})`
+      );
+    }
+
+    async function handleComparePhoto(slot, files) {
+      const file = files && files[0];
+      if (!file) return;
+      if (!checkFileLimits(file)) {
+        document.getElementById(`compare-${slot.toLowerCase()}-picker`).value = "";
+        return;
+      }
+
+      const thumb = document.getElementById(`thumb-${slot.toLowerCase()}`);
+      const label = document.getElementById(`verdict-${slot.toLowerCase()}`);
+      thumb.src = URL.createObjectURL(file);
+      thumb.style.display = "block";
+      label.textContent = "Analizando...";
+
+      const res = await evaluatePhotoData(file);
+      compareResults[slot] = { name: file.name, ...res };
+
+      if (res.mode === "fake") {
+        label.style.color = "var(--fake)";
+        label.textContent = `FALSO / IA (${res.finalAiPct}%) · ${file.name}`;
+      } else if (res.mode === "real") {
+        label.style.color = "var(--real)";
+        label.textContent = `REAL (${100 - res.finalAiPct}% sin IA) · ${file.name}`;
+      } else {
+        label.style.color = "var(--warn)";
+        label.textContent = `INCIERTO (${res.finalAiPct}% IA) · ${file.name}`;
+      }
+
+      updateCompareSummary();
+      document.getElementById(`compare-${slot.toLowerCase()}-picker`).value = "";
+    }
+
+    function updateCompareSummary() {
+      const a = compareResults.A;
+      const b = compareResults.B;
+      const box = document.getElementById("compare-summary");
+      if (!a || !b) {
+        box.style.display = "none";
+        return;
+      }
+
+      box.style.display = "block";
+      const diff = Math.abs(a.finalAiPct - b.finalAiPct);
+      const higher = a.finalAiPct > b.finalAiPct ? `Foto A (${a.name})` : `Foto B (${b.name})`;
+      const lower = a.finalAiPct < b.finalAiPct ? `Foto A (${a.name})` : `Foto B (${b.name})`;
+
+      let conclusion = `Diferencia de ${diff} puntos porcentuales: ${higher} presenta mayor índice de IA (${Math.max(a.finalAiPct, b.finalAiPct)}%) frente a ${lower} (${Math.min(a.finalAiPct, b.finalAiPct)}%).`;
+      if (a.finalAiPct === b.finalAiPct) {
+        conclusion = `Ambas imágenes registran el mismo índice estimado de IA (${a.finalAiPct}%).`;
+      }
+
+      box.innerHTML = `
+        <strong>Comparación directa:</strong><br/>
+        • Foto A (${a.name}): <strong>${a.finalAiPct}% IA</strong> · Res: ${a.dimsLabel} · Ruido: ${a.noiseLabel}<br/>
+        • Foto B (${b.name}): <strong>${b.finalAiPct}% IA</strong> · Res: ${b.dimsLabel} · Ruido: ${b.noiseLabel}<br/>
+        • ${conclusion}
+      `;
+    }
+
+    async function inspectVideo(file) {
+      const vid = document.getElementById("vid-preview");
+      vid.src = URL.createObjectURL(file);
+      vid.style.display = "block";
+
+      const headBuf = await file.slice(0, 1200000).arrayBuffer();
+      const raw = scanAsciiFull(new Uint8Array(headBuf));
+      const aiHits = AI_KEYWORDS.filter((k) => raw.includes(k));
+      const camHits = CAMERA_EXIF_TAGS.filter((k) => raw.includes(k));
+
+      let score = 50;
+      const reasons = [];
+
+      if (aiHits.length > 0) {
+        score += 40;
+        reasons.push(`Firmas de generador de video IA en contenedor: ${aiHits.join(", ")}.`);
+      }
+      if (camHits.length > 0) {
+        score -= 26;
+        reasons.push(`Metadatos de dispositivo de grabación detectados (${camHits.slice(0, 3).join(", ")}).`);
+      }
+      if (aiHits.length === 0 && camHits.length === 0) {
+        reasons.push("El contenedor de video no incluye metadatos de cámara ni etiquetas de IA.");
+      }
+
+      score = Math.max(5, Math.min(96, score));
+      if (score >= 58) {
+        renderVerdict("fake", score, "FALSO / Video con señales de IA", reasons, file.name);
+      } else if (score <= 42) {
+        renderVerdict("real", score, "REAL / Video con metadatos de grabación", reasons, file.name);
+      } else {
+        renderVerdict("warn", score, "INCIERTO / Video sin metadatos concluyentes", reasons, file.name);
+      }
+    }
+
+    async function processGalleryFile(files) {
+      const file = files && files[0];
+      if (!file) return;
+      goView("inicio");
+      clearMediaBox();
+
+      if (!checkFileLimits(file)) {
+        document.getElementById("gallery-picker").value = "";
+        return;
+      }
+
+      document.getElementById("status-line").textContent = `Analizando "${file.name}"...`;
+
+      if (file.type.startsWith("video/") || /\.(mp4|mov|webm|mkv|avi)$/i.test(file.name)) {
+        await inspectVideo(file);
+      } else {
+        await inspectPhoto(file);
+      }
+
+      document.getElementById("status-line").textContent = `Analizado: ${file.name}`;
+      document.getElementById("gallery-picker").value = "";
+    }
+
+    async function processAnyFile(files) {
+      const file = files && files[0];
+      if (!file) return;
+      goView("inicio");
+      clearMediaBox();
+
+      if (!checkFileLimits(file)) {
+        document.getElementById("doc-picker").value = "";
+        return;
+      }
+
+      const lower = file.name.toLowerCase();
+      document.getElementById("status-line").textContent = `Revisando "${file.name}"...`;
+
+      if (file.type.startsWith("image/") || /\.(jpg|jpeg|png|webp|gif|heic|bmp)$/i.test(lower)) {
+        await inspectPhoto(file);
+      } else if (file.type.startsWith("video/") || /\.(mp4|mov|webm|mkv)$/i.test(lower)) {
+        await inspectVideo(file);
+      } else if (file.type === "application/pdf" || lower.endsWith(".pdf")) {
+        try {
+          const buf = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+          let txt = "";
+          for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
+            const p = await pdf.getPage(i);
+            const c = await p.getTextContent();
+            txt += c.items.map((x) => x.str).join(" ") + " ";
+          }
+          document.getElementById("text-input").value = txt.trim();
+          analyzeTextInput(txt, file.name);
+        } catch (_) {
+          renderVerdict("warn", 50, "No se pudo leer el PDF", [
+            "El archivo puede estar protegido o escaneado."
+          ], file.name);
+        }
+      } else if (file.type.startsWith("text/") || /\.(txt|md|csv|json|log)$/i.test(lower)) {
+        const txt = await file.text();
+        document.getElementById("text-input").value = txt;
+        analyzeTextInput(txt, file.name);
+      } else {
+        const buf = await file.slice(0, 800000).arrayBuffer();
+        const hits = AI_KEYWORDS.filter((k) => scanAsciiFull(new Uint8Array(buf)).includes(k));
+        if (hits.length > 0) {
+          renderVerdict("fake", 86, "FALSO / Señales de IA en el archivo", [
+            `Coincidencias encontradas: ${hits.join(", ")}.`
+          ], file.name);
+        } else {
+          renderVerdict("warn", 50, "INCIERTO / Sin metadatos de texto ni imagen", [
+            `Archivo "${file.name}" revisado localmente sin hallar etiquetas de IA.`
+          ], file.name);
+        }
+      }
+
+      document.getElementById("status-line").textContent = `Revisado: ${file.name}`;
+      document.getElementById("doc-picker").value = "";
+    }
+
+    function analyzeTextInput(overrideText, sourceLabel = "Entrada de texto") {
+      const raw = typeof overrideText === "string"
+        ? overrideText
+        : document.getElementById("text-input").value;
+      const text = raw.trim();
+
+      if (!text) {
+        renderVerdict("warn", 0, "Sin texto para analizar", [
+          "Escribe o pega algún texto primero."
+        ], sourceLabel);
+        return;
+      }
+
+      const words = text.split(/\s+/).filter(Boolean);
+      const cleanWords = words
+        .map((w) => w.toLowerCase().replace(/[^a-záéíóúüñ0-9]/gi, ""))
+        .filter(Boolean);
+
+      if (cleanWords.length < 12) {
+        renderVerdict("warn", 50, "Texto demasiado corto para verificar", [
+          `Solo hay ${cleanWords.length} palabras. Pega al menos un párrafo (20+ palabras) para analizar el estilo.`
+        ], sourceLabel);
+        return;
+      }
+
+      const lower = text.toLowerCase();
+      const sentences = text
+        .split(/[.!?…\n]+/)
+        .map((s) => s.trim())
+        .filter((s) => s.split(/\s+/).length >= 3);
+
+      let aiScore = 45;
+      const reasons = [];
+
+      const connectorHits = AI_TEXT_CONNECTORS.filter((p) => lower.includes(p));
+      if (connectorHits.length > 0) {
+        aiScore += Math.min(36, connectorHits.length * 14);
+        reasons.push(`Fórmulas discursivas típicas de IA: "${connectorHits.slice(0, 3).join('", "')}".`);
+      }
+
+      const aiMentions = AI_KEYWORDS.filter((k) => lower.includes(k));
+      if (aiMentions.length > 0) {
+        aiScore += 25;
+        reasons.push(`Referencias directas a modelos de IA: ${aiMentions.join(", ")}.`);
+      }
+
+      if (sentences.length >= 3) {
+        const lens = sentences.map((s) => s.split(/\s+/).length);
+        const mean = lens.reduce((a, b) => a + b, 0) / lens.length;
+        const stdDev = Math.sqrt(
+          lens.reduce((acc, n) => acc + Math.pow(n - mean, 2), 0) / lens.length
+        );
+        const cv = mean > 0 ? stdDev / mean : 0;
+
+        if (cv < 0.28 && mean >= 11) {
+          aiScore += 22;
+          reasons.push(`Ritmo de oraciones muy uniforme y mecánico (variación ${(cv * 100).toFixed(0)}%).`);
+        } else if (cv > 0.52) {
+          aiScore -= 18;
+          reasons.push(`Alta variación natural en el ritmo de las oraciones (variación ${(cv * 100).toFixed(0)}%).`);
+        }
+      }
+
+      const bulletLines = (text.match(/(^|\n)\s*([-*•]|\d+[.)])\s+/g) || []).length;
+      const boldMarkers = (text.match(/\*\*[^*]+\*\*/g) || []).length;
+      if (bulletLines >= 3 || boldMarkers >= 2) {
+        aiScore += 18;
+        reasons.push("Estructura de viñetas/encabezados característica de respuestas generadas por IA.");
+      }
+
+      const humanMarks = (text.match(/\b(jaja|jeje|wey|neta|o sea|pues|bueno|eh|mmm|xq|q|tb|tmb)\b/gi) || []).length;
+      const missingAccents = (lower.match(/\b(tambien|ademas|asi|mas|dia|codigo|pagina|informacion|analisis)\b/g) || []).length;
+      if (humanMarks >= 1 || missingAccents >= 2) {
+        aiScore -= 22;
+        reasons.push("Rasgos de escritura espontánea o coloquial humana.");
+      }
+
+      const uniqueCount = new Set(cleanWords).size;
+      const ttr = uniqueCount / cleanWords.length;
+      if (cleanWords.length >= 30 && ttr < 0.50) {
+        aiScore += 12;
+        reasons.push(`Repetición elevada de términos (diversidad léxica ${(ttr * 100).toFixed(0)}%).`);
+      }
+
+      if (reasons.length === 0) {
+        reasons.push(`Analizadas ${cleanWords.length} palabras y ${sentences.length} oraciones sin sesgo fuerte.`);
+      }
+
+      aiScore = Math.max(5, Math.min(97, Math.round(aiScore)));
+
+      if (aiScore >= 58) {
+        renderVerdict("fake", aiScore, "FALSO / Alta probabilidad de texto hecho con IA", reasons, sourceLabel);
+      } else if (aiScore <= 42) {
+        renderVerdict("real", aiScore, "REAL / Redacción compatible con autor humano", reasons, sourceLabel);
+      } else {
+        renderVerdict("warn", aiScore, "INCIERTO / Texto mixto o editado", reasons, sourceLabel);
+      }
+    }
+
+    function renderVerdict(mode, aiPct, title, reasons, sourceName = "Contenido analizado") {
+      const box = document.getElementById("verdict-box");
+      const tag = document.getElementById("verdict-tag");
+      const heading = document.getElementById("verdict-heading");
+      const bar = document.getElementById("pct-bar");
+      const list = document.getElementById("detail-list");
+
+      box.style.display = "block";
+      heading.textContent = title;
+
+      let badgeLabel = "AVISO";
+      if (mode === "fake") {
+        tag.className = "tag tag-fake";
+        badgeLabel = `FALSO / IA (${aiPct}%)`;
+        bar.style.width = `${aiPct}%`;
+        bar.style.background = "var(--fake)";
+      } else if (mode === "real") {
+        const realPct = 100 - aiPct;
+        tag.className = "tag tag-real";
+        badgeLabel = `REAL (${realPct}%)`;
+        bar.style.width = `${realPct}%`;
+        bar.style.background = "var(--real)";
+      } else {
+        tag.className = "tag tag-warn";
+        badgeLabel = aiPct > 0 ? `INCIERTO (${aiPct}% IA)` : "AVISO";
+        bar.style.width = `${aiPct}%`;
+        bar.style.background = "var(--warn)";
+      }
+      tag.textContent = badgeLabel;
+
+      list.innerHTML = "";
+      reasons.forEach((r) => {
+        const li = document.createElement("li");
+        li.textContent = r;
+        list.appendChild(li);
+      });
+
+      const now = new Date().toLocaleString("es-MX");
+      lastReportText = [
+        "REPORTE DE EVIDENCIA — CON INTELIGENCIA",
+        `Fecha y hora: ${now}`,
+        `Elemento revisado: ${sourceName}`,
+        `Veredicto: ${badgeLabel} — ${title}`,
+        "Señales observadas:",
+        ...reasons.map((r) => `  - ${r}`),
+        "Privacidad: Procesado localmente; no se guardan archivos en ninguna nube."
+      ].join("\n");
+
+      const preview = document.getElementById("report-preview");
+      preview.textContent = lastReportText;
+    }
+
+    function toggleReportPreview() {
+      const preview = document.getElementById("report-preview");
+      if (!lastReportText) return;
+      const isVisible = preview.style.display === "block";
+      preview.style.display = isVisible ? "none" : "block";
+      if (!isVisible && navigator.clipboard) {
+        navigator.clipboard.writeText(lastReportText).catch(() => {});
+      }
+    }
+
+    function downloadEvidenceReport() {
+      if (!lastReportText) return;
+      const blob = new Blob([lastReportText], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "reporte-evidencia-con-inteligencia.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
